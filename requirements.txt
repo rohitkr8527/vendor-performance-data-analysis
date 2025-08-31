@@ -1,0 +1,8 @@
+pymysql
+sqlalchemy
+dotenv
+cryptography
+pandas
+matplotlib
+seaborn
+scipy
