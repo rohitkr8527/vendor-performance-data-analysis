@@ -1,0 +1,107 @@
+============================================================
+                          INTRO
+============================================================
+This dataset models store-SKU inventory at period start and
+end, daily sales, receiving (purchases), vendor invoices,
+and vendor-item purchase prices to enable movement, costing,
+and reconciliation workflows.
+
+Core item key: InventoryId (store+SKU)
+Purchasing key: VendorNumber + PONumber + InvoiceDate
+Vendor-item price reference: Brand + Description + Size + VendorNumber
+
+============================================================
+                          TABLES
+============================================================
+
+inventory_start
+---------------
+Snapshot of each store’s SKU at the period start
+
++----------------------+-------+----------------+-------+----------------------------+-------+--------+--------+------------+
+| InventoryId          | Store | City           | Brand | Description                | Size  | onHand | Price  | startDate  |
++----------------------+-------+----------------+-------+----------------------------+-------+--------+--------+------------+
+| 1_HARDERSFIELD_58    | 1     | HARDERSFIELD   | 58    | Gekkeikan Black & Gold Sake | 750mL | 8     | 12.99  | 2024-01-01 |
+| 1_HARDERSFIELD_62    | 1     | HARDERSFIELD   | 62    | Herradura Silver Tequila    | 750mL | 6     | 36.99  | 2024-01-01 |
++----------------------+-------+----------------+-------+----------------------------+-------+--------+--------+------------+
+
+inventory_end
+-------------
+Snapshot of each store’s SKU at the period end
+
++----------------------+-------+----------------+-------+----------------------------+-------+--------+--------+------------+
+| InventoryId          | Store | City           | Brand | Description                | Size  | onHand | Price  | endDate    |
++----------------------+-------+----------------+-------+----------------------------+-------+--------+--------+------------+
+| 1_HARDERSFIELD_58    | 1     | HARDERSFIELD   | 58    | Gekkeikan Black & Gold Sake| 750mL | 11     | 12.99  | 2024-12-31 |
+| 1_HARDERSFIELD_62    | 1     | HARDERSFIELD   | 62    | Herradura Silver Tequila   | 750mL | 7      | 36.99  | 2024-12-31 |
++----------------------+-------+----------------+-------+----------------------------+-------+--------+--------+------------+
+
+sales
+-----
+Daily POS facts per InventoryId
+
++----------------------+-------+-------+---------------------------+------------+---------------+--------------+------------+------------+--------+----------------+-----------+----------+---------------------------+
+| InventoryId          | Store | Brand | Description               | Size       | SalesQuantity | SalesDollars | SalesPrice | SalesDate  | Volume | Classification | ExciseTax | VendorNo | VendorName                |
++----------------------+-------+-------+---------------------------+------------+---------------+--------------+------------+------------+--------+----------------+-----------+----------+---------------------------+
+| 1_HARDERSFIELD_1004  | 1     | 1004  | Jim Beam w/2 Rocks Glasses| 750mL      | 1             | 16.49        | 16.49      | 2024-01-01 | 750.0  | 1              | 0.79      | 12546    | JIM BEAM BRANDS COMPANY   |
+| 1_HARDERSFIELD_1005  | 1     | 1005  | Maker's Mark Combo Pack   | 375mL 2 Pk | 2             | 69.98        | 34.99      | 2024-01-09 | 375.0  | 1              | 0.79      | 12546    | JIM BEAM BRANDS COMPANY   |
++----------------------+-------+-------+---------------------------+------------+---------------+--------------+------------+------------+--------+----------------+-----------+----------+---------------------------+
+
+purchases
+---------
+Receiving lines per InventoryId tied to PO/invoice
+
++----------------------+-------+-------+------------------------------+--------+--------------+-------------------------+----------+------------+---------------+------------+------------+---------------+----------+---------+----------------+
+| InventoryId          | Store | Brand | Description                  | Size   | VendorNumber | VendorName              | PONumber | PODate     | ReceivingDate | InvoiceDate| PayDate    | PurchasePrice | Quantity | Dollars | Classification |
++----------------------+-------+-------+------------------------------+--------+--------------+-------------------------+----------+------------+---------------+------------+------------+---------------+----------+---------+----------------+
+| 1_HARDERSFIELD_5255  | 1     | 5255  | TGI Fridays Ultimte Mudslide | 1.75L  | 4466         | AMERICAN VINTAGE BEVERAGE| 8137    | 2023-12-22 | 2024-01-01    | 2024-01-07 | 2024-02-21 | 9.35          | 6        | 56.10   | 1              |
+| 69_MOUNTMEND_8412    | 69    | 8412  | Tequila Ocho Plata Fresno    | 750mL  | 105          | ALTAMAR BRANDS LLC       | 8124    | 2023-12-21 | 2024-01-02    | 2024-01-04 | 2024-02-16 | 35.71         | 6        | 214.26  | 1              |
++----------------------+-------+-------+------------------------------+--------+--------------+-------------------------+----------+------------+---------------+------------+------------+---------------+----------+---------+----------------+
+
+vendor_invoice
+--------------
+Invoice headers summarizing purchases
+
++--------------+-------------------------+------------+----------+------------+------------+---------+---------+--------+---------+
+| VendorNumber | VendorName              | InvoiceDate| PONumber | PODate     | PayDate    | Quantity| Dollars | Freight| Approval|
++--------------+-------------------------+------------+----------+------------+------------+---------+---------+--------+---------+
+| 4466         |AMERICAN VINTAGE BEVERAGE| 2024-01-07 | 8137     | 2023-12-22 | 2024-02-21 | 15      | 140.55  | 8.57   | None    |
+| 105          | ALTAMAR BRANDS LLC      | 2024-01-04 | 8124     | 2023-12-21 | 2024-02-16 | 6       | 214.26  | 3.47   | None    |
++--------------+-------------------------+------------+----------+------------+------------+---------+---------+--------+---------+
+
+purchase_prices
+---------------
+Vendor-item price list
+
++-------+------------------------------+-------+--------+--------+----------------+---------------+--------------+-------------------------+
+| Brand | Description                  | Price | Size   | Volume | Classification | PurchasePrice | VendorNumber | VendorName              |
++-------+------------------------------+-------+--------+--------+----------------+---------------+--------------+-------------------------+
+| 58    | Gekkeikan Black & Gold Sake  | 12.99 | 750mL  | 750    | 1              | 9.28          | 8320         | SHAW ROSS INT L IMP LTD |
+| 62    | Herradura Silver Tequila     | 36.99 | 750mL  | 750    | 1              | 28.67         | 1128         | BROWN-FORMAN CORP       |
++-------+------------------------------+-------+--------+--------+----------------+---------------+--------------+-------------------------+
+
+============================================================
+                           KEYS
+============================================================
+inventory_start: PK = InventoryId
+inventory_end: PK = InventoryId
+sales: PK = (InventoryId, SalesDate)
+purchases: PK = (InventoryId, ReceivingDate, PONumber)
+vendor_invoice: PK = (VendorNumber, PONumber, InvoiceDate)
+purchase_prices: PK = (Brand, Description, Size, VendorNumber)
+
+============================================================
+                      RELATIONSHIPS
+============================================================
+- sales.InventoryId → inventory_start.InventoryId / inventory_end.InventoryId (M:1)
+- purchases.InventoryId → inventory_start.InventoryId / inventory_end.InventoryId (M:1)
+- purchases.(VendorNumber,PONumber,InvoiceDate) → vendor_invoice.(VendorNumber,PONumber,InvoiceDate) (M:1)
+- purchases.(Brand,Description,Size,VendorNumber) → purchase_prices.(Brand,Description,Size,VendorNumber) (M:1)
+- inventory_(start/end).(Brand,Description,Size) → purchase_prices.(Brand,Description,Size) (1:M)
+
+============================================================
+                     DERIVATION NOTES
+============================================================
+- inventory_end = inventory_start + purchases - sales (subject to returns/adjustments)
+- purchases lines validated against vendor_invoice headers and purchase_prices
+- sales and purchases feed movement analytics; inventory_start/end are period boundaries
