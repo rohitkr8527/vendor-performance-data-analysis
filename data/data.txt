@@ -1,107 +1,297 @@
-============================================================
-                          INTRO
-============================================================
-This dataset models store-SKU inventory at period start and
-end, daily sales, receiving (purchases), vendor invoices,
-and vendor-item purchase prices to enable movement, costing,
-and reconciliation workflows.
+================================================================================
+                    VENDOR PERFORMANCE DATA CARD
+================================================================================
 
-Core item key: InventoryId (store+SKU)
-Purchasing key: VendorNumber + PONumber + InvoiceDate
-Vendor-item price reference: Brand + Description + Size + VendorNumber
+PROJECT: Vendor Performance Data and Business Analysis
+DOMAIN: Retail purchasing, sales, and inventory management
+TIME PERIOD: 2024-01-01 to 2024-12-31 (Full year 2024)
 
-============================================================
-                          TABLES
-============================================================
 
-inventory_start
----------------
-Snapshot of each store’s SKU at the period start
+================================================================================
+1. DATASET OVERVIEW
+================================================================================
 
-+----------------------+-------+----------------+-------+----------------------------+-------+--------+--------+------------+
-| InventoryId          | Store | City           | Brand | Description                | Size  | onHand | Price  | startDate  |
-+----------------------+-------+----------------+-------+----------------------------+-------+--------+--------+------------+
-| 1_HARDERSFIELD_58    | 1     | HARDERSFIELD   | 58    | Gekkeikan Black & Gold Sake | 750mL | 8     | 12.99  | 2024-01-01 |
-| 1_HARDERSFIELD_62    | 1     | HARDERSFIELD   | 62    | Herradura Silver Tequila    | 750mL | 6     | 36.99  | 2024-01-01 |
-+----------------------+-------+----------------+-------+----------------------------+-------+--------+--------+------------+
+Total Files: 6 CSV files
+Total Records: ~15.6 million rows across all datasets
+Data Granularity: Store-Brand-Date level transactions and inventory snapshots
+Primary Key Pattern: InventoryId (Store_City_Brand composite)
 
-inventory_end
--------------
-Snapshot of each store’s SKU at the period end
 
-+----------------------+-------+----------------+-------+----------------------------+-------+--------+--------+------------+
-| InventoryId          | Store | City           | Brand | Description                | Size  | onHand | Price  | endDate    |
-+----------------------+-------+----------------+-------+----------------------------+-------+--------+--------+------------+
-| 1_HARDERSFIELD_58    | 1     | HARDERSFIELD   | 58    | Gekkeikan Black & Gold Sake| 750mL | 11     | 12.99  | 2024-12-31 |
-| 1_HARDERSFIELD_62    | 1     | HARDERSFIELD   | 62    | Herradura Silver Tequila   | 750mL | 7      | 36.99  | 2024-12-31 |
-+----------------------+-------+----------------+-------+----------------------------+-------+--------+--------+------------+
+================================================================================
+2. FILE SPECIFICATIONS
+================================================================================
 
-sales
------
-Daily POS facts per InventoryId
+------------------------------------------------------------------------------
+2.1 SALES.CSV - Transaction-level Sales Data
+------------------------------------------------------------------------------
+Description: Daily sales transactions by product, store, and brand
+Records: 12,825,364 rows (12.8M transactions)
+Time Range: 2024-01-01 to 2024-12-31
 
-+----------------------+-------+-------+---------------------------+------------+---------------+--------------+------------+------------+--------+----------------+-----------+----------+---------------------------+
-| InventoryId          | Store | Brand | Description               | Size       | SalesQuantity | SalesDollars | SalesPrice | SalesDate  | Volume | Classification | ExciseTax | VendorNo | VendorName                |
-+----------------------+-------+-------+---------------------------+------------+---------------+--------------+------------+------------+--------+----------------+-----------+----------+---------------------------+
-| 1_HARDERSFIELD_1004  | 1     | 1004  | Jim Beam w/2 Rocks Glasses| 750mL      | 1             | 16.49        | 16.49      | 2024-01-01 | 750.0  | 1              | 0.79      | 12546    | JIM BEAM BRANDS COMPANY   |
-| 1_HARDERSFIELD_1005  | 1     | 1005  | Maker's Mark Combo Pack   | 375mL 2 Pk | 2             | 69.98        | 34.99      | 2024-01-09 | 375.0  | 1              | 0.79      | 12546    | JIM BEAM BRANDS COMPANY   |
-+----------------------+-------+-------+---------------------------+------------+---------------+--------------+------------+------------+--------+----------------+-----------+----------+---------------------------+
+SCHEMA:
+  - InventoryId      : VARCHAR   - Composite key (Store_City_Brand)
+  - Store            : INT       - Store number identifier
+  - Brand            : VARCHAR   - Brand code/identifier
+  - Description      : VARCHAR   - Product description
+  - Size             : VARCHAR   - Product size (e.g., 750mL, 1.75L)
+  - SalesQuantity    : INT       - Units sold in the transaction
+  - SalesDollars     : DECIMAL   - Total transaction revenue
+  - SalesPrice       : DECIMAL   - Unit price at sale
+  - SalesDate        : DATE      - Transaction date
+  - Volume           : DECIMAL   - Volume in mL
+  - Classification   : INT       - Product classification code
+  - ExciseTax        : DECIMAL   - Excise tax amount
+  - VendorNo         : INT       - Vendor number
+  - VendorName       : VARCHAR   - Vendor name (padded)
 
-purchases
----------
-Receiving lines per InventoryId tied to PO/invoice
+SAMPLE DATA:
+  1_HARDERSFIELD_1004, Store:1, Brand:1004, Jim Beam w/2 Rocks Glasses, 
+  750mL, Qty:1, $16.49, Date:2024-01-01
 
-+----------------------+-------+-------+------------------------------+--------+--------------+-------------------------+----------+------------+---------------+------------+------------+---------------+----------+---------+----------------+
-| InventoryId          | Store | Brand | Description                  | Size   | VendorNumber | VendorName              | PONumber | PODate     | ReceivingDate | InvoiceDate| PayDate    | PurchasePrice | Quantity | Dollars | Classification |
-+----------------------+-------+-------+------------------------------+--------+--------------+-------------------------+----------+------------+---------------+------------+------------+---------------+----------+---------+----------------+
-| 1_HARDERSFIELD_5255  | 1     | 5255  | TGI Fridays Ultimte Mudslide | 1.75L  | 4466         | AMERICAN VINTAGE BEVERAGE| 8137    | 2023-12-22 | 2024-01-01    | 2024-01-07 | 2024-02-21 | 9.35          | 6        | 56.10   | 1              |
-| 69_MOUNTMEND_8412    | 69    | 8412  | Tequila Ocho Plata Fresno    | 750mL  | 105          | ALTAMAR BRANDS LLC       | 8124    | 2023-12-21 | 2024-01-02    | 2024-01-04 | 2024-02-16 | 35.71         | 6        | 214.26  | 1              |
-+----------------------+-------+-------+------------------------------+--------+--------------+-------------------------+----------+------------+---------------+------------+------------+---------------+----------+---------+----------------+
+KEY METRICS (from README):
+  - Total Sales: $452.06M
+  - Portfolio Scale: Commercial retail beverage operations
 
-vendor_invoice
---------------
-Invoice headers summarizing purchases
 
-+--------------+-------------------------+------------+----------+------------+------------+---------+---------+--------+---------+
-| VendorNumber | VendorName              | InvoiceDate| PONumber | PODate     | PayDate    | Quantity| Dollars | Freight| Approval|
-+--------------+-------------------------+------------+----------+------------+------------+---------+---------+--------+---------+
-| 4466         |AMERICAN VINTAGE BEVERAGE| 2024-01-07 | 8137     | 2023-12-22 | 2024-02-21 | 15      | 140.55  | 8.57   | None    |
-| 105          | ALTAMAR BRANDS LLC      | 2024-01-04 | 8124     | 2023-12-21 | 2024-02-16 | 6       | 214.26  | 3.47   | None    |
-+--------------+-------------------------+------------+----------+------------+------------+---------+---------+--------+---------+
+------------------------------------------------------------------------------
+2.2 PURCHASES.CSV - Product Procurement Records
+------------------------------------------------------------------------------
+Description: Purchase order receipts and vendor transactions
+Records: 2,372,475 rows (2.4M procurement transactions)
+Time Range: Purchase dates throughout 2024
 
-purchase_prices
----------------
-Vendor-item price list
+SCHEMA:
+  - InventoryId      : VARCHAR   - Composite key (Store_City_Brand)
+  - Store            : INT       - Store number
+  - Brand            : VARCHAR   - Brand code
+  - Description      : VARCHAR   - Product description
+  - Size             : VARCHAR   - Product size
+  - VendorNumber     : INT       - Vendor identifier
+  - VendorName       : VARCHAR   - Vendor name (padded)
+  - PONumber         : INT       - Purchase order number
+  - PODate           : DATE      - Purchase order date
+  - ReceivingDate    : DATE      - Date goods received
+  - InvoiceDate      : DATE      - Invoice date
+  - PayDate          : DATE      - Payment date
+  - PurchasePrice    : DECIMAL   - Unit purchase cost
+  - Quantity         : INT       - Units purchased
+  - Dollars          : DECIMAL   - Total purchase cost
+  - Classification   : INT       - Product classification
 
-+-------+------------------------------+-------+--------+--------+----------------+---------------+--------------+-------------------------+
-| Brand | Description                  | Price | Size   | Volume | Classification | PurchasePrice | VendorNumber | VendorName              |
-+-------+------------------------------+-------+--------+--------+----------------+---------------+--------------+-------------------------+
-| 58    | Gekkeikan Black & Gold Sake  | 12.99 | 750mL  | 750    | 1              | 9.28          | 8320         | SHAW ROSS INT L IMP LTD |
-| 62    | Herradura Silver Tequila     | 36.99 | 750mL  | 750    | 1              | 28.67         | 1128         | BROWN-FORMAN CORP       |
-+-------+------------------------------+-------+--------+--------+----------------+---------------+--------------+-------------------------+
+SAMPLE DATA:
+  69_MOUNTMEND_8412, Tequila Ocho Plata Fresno, Vendor:105, 
+  PO:8124, Qty:6, Cost:$214.26, Received:2024-01-02
 
-============================================================
-                           KEYS
-============================================================
-inventory_start: PK = InventoryId
-inventory_end: PK = InventoryId
-sales: PK = (InventoryId, SalesDate)
-purchases: PK = (InventoryId, ReceivingDate, PONumber)
-vendor_invoice: PK = (VendorNumber, PONumber, InvoiceDate)
-purchase_prices: PK = (Brand, Description, Size, VendorNumber)
+KEY METRICS (from README):
+  - Procurement Spend: $321.90M
+  - Cost Coverage: 99.90% of sales have matched purchase costs
 
-============================================================
-                      RELATIONSHIPS
-============================================================
-- sales.InventoryId → inventory_start.InventoryId / inventory_end.InventoryId (M:1)
-- purchases.InventoryId → inventory_start.InventoryId / inventory_end.InventoryId (M:1)
-- purchases.(VendorNumber,PONumber,InvoiceDate) → vendor_invoice.(VendorNumber,PONumber,InvoiceDate) (M:1)
-- purchases.(Brand,Description,Size,VendorNumber) → purchase_prices.(Brand,Description,Size,VendorNumber) (M:1)
-- inventory_(start/end).(Brand,Description,Size) → purchase_prices.(Brand,Description,Size) (1:M)
 
-============================================================
-                     DERIVATION NOTES
-============================================================
-- inventory_end = inventory_start + purchases - sales (subject to returns/adjustments)
-- purchases lines validated against vendor_invoice headers and purchase_prices
-- sales and purchases feed movement analytics; inventory_start/end are period boundaries
+------------------------------------------------------------------------------
+2.3 BEGIN_INVENTORY.CSV - Starting Inventory Snapshot
+------------------------------------------------------------------------------
+Description: Inventory on-hand at the beginning of the period
+Records: 206,530 rows (206K SKU-store combinations)
+Snapshot Date: 2024-01-01
+
+SCHEMA:
+  - InventoryId      : VARCHAR   - Composite key (Store_City_Brand)
+  - Store            : INT       - Store number
+  - City             : VARCHAR   - Store city location
+  - Brand            : VARCHAR   - Brand code
+  - Description      : VARCHAR   - Product description
+  - Size             : VARCHAR   - Product size
+  - onHand           : INT       - Units in stock
+  - Price            : DECIMAL   - Retail price
+  - startDate        : DATE      - Snapshot date (2024-01-01)
+
+SAMPLE DATA:
+  1_HARDERSFIELD_58, Store:1, City:HARDERSFIELD, Brand:58, 
+  Gekkeikan Black & Gold Sake, onHand:8, $12.99
+
+
+------------------------------------------------------------------------------
+2.4 END_INVENTORY.CSV - Ending Inventory Snapshot
+------------------------------------------------------------------------------
+Description: Inventory on-hand at the end of the period
+Records: 224,490 rows (224K SKU-store combinations)
+Snapshot Date: 2024-12-31
+
+SCHEMA:
+  - InventoryId      : VARCHAR   - Composite key (Store_City_Brand)
+  - Store            : INT       - Store number
+  - City             : VARCHAR   - Store city location
+  - Brand            : VARCHAR   - Brand code
+  - Description      : VARCHAR   - Product description
+  - Size             : VARCHAR   - Product size
+  - onHand           : INT       - Units in stock
+  - Price            : DECIMAL   - Retail price
+  - endDate          : DATE      - Snapshot date (2024-12-31)
+
+SAMPLE DATA:
+  1_HARDERSFIELD_58, Store:1, Brand:58, Gekkeikan Black & Gold Sake, 
+  onHand:11, $12.99, endDate:2024-12-31
+
+KEY METRICS (from README):
+  - Ending Inventory Retail Value: $79.70M
+  - Inventory Growth: 224,490 - 206,530 = +17,960 SKU-store records
+
+
+------------------------------------------------------------------------------
+2.5 VENDOR_INVOICE.CSV - Vendor Invoice Summary
+------------------------------------------------------------------------------
+Description: Aggregated vendor invoice and freight data by purchase order
+Records: 5,544 rows (5.5K vendor invoices)
+
+SCHEMA:
+  - VendorNumber     : INT       - Vendor identifier
+  - VendorName       : VARCHAR   - Vendor name (padded)
+  - InvoiceDate      : DATE      - Invoice date
+  - PONumber         : INT       - Purchase order number
+  - PODate           : DATE      - Purchase order date
+  - PayDate          : DATE      - Payment date
+  - Quantity         : INT       - Total units on invoice
+  - Dollars          : DECIMAL   - Invoice amount
+  - Freight          : DECIMAL   - Freight/shipping costs
+  - Approval         : VARCHAR   - Approval status (mostly empty)
+
+SAMPLE DATA:
+  Vendor:105, ALTAMAR BRANDS LLC, InvoiceDate:2024-01-04, 
+  PO:8124, Qty:6, Amount:$214.26, Freight:$3.47
+
+PURPOSE:
+  - Tracks vendor payment terms and freight allocation
+  - Used for freight cost analysis by vendor
+
+
+------------------------------------------------------------------------------
+2.6 PURCHASE_PRICES.CSV - Product Master Reference
+------------------------------------------------------------------------------
+Description: Product catalog with pricing and vendor mapping
+Records: 12,262 rows (12K product-vendor combinations)
+
+SCHEMA:
+  - Brand            : VARCHAR   - Brand code (primary key)
+  - Description      : VARCHAR   - Product description
+  - Price            : DECIMAL   - Retail price
+  - Size             : VARCHAR   - Product size
+  - Volume           : INT       - Volume in mL
+  - Classification   : INT       - Product classification
+  - PurchasePrice    : DECIMAL   - Purchase cost per unit
+  - VendorNumber     : INT       - Primary vendor
+  - VendorName       : VARCHAR   - Vendor name
+
+SAMPLE DATA:
+  Brand:58, Gekkeikan Black & Gold Sake, Retail:$12.99, 750mL, 
+  PurchasePrice:$9.28, Vendor:8320 (SHAW ROSS INT L IMP LTD)
+
+PURPOSE:
+  - Product master data for brand-vendor relationships
+  - Reference pricing for cost and margin calculations
+
+
+================================================================================
+3. DATA RELATIONSHIPS
+================================================================================
+
+PRIMARY RELATIONSHIPS:
+  sales.VendorNo → purchases.VendorNumber → vendor_invoice.VendorNumber
+  sales.Brand → purchase_prices.Brand
+  sales.InventoryId → begin_inventory.InventoryId → end_inventory.InventoryId
+
+COMPOSITE KEY PATTERN:
+  InventoryId format: {Store}_{City}_{Brand}
+  Example: 1_HARDERSFIELD_1004
+
+INVENTORY EQUATION (Reconciled):
+  EndingUnits = BeginningUnits + PurchaseUnits - SalesUnits
+  Validation: Reconciles exactly at portfolio level
+
+
+================================================================================
+4. KEY BUSINESS DEFINITIONS
+================================================================================
+
+ESTIMATED COGS:
+  Sales Quantity × Weighted Purchase Cost (same vendor-brand)
+
+WEIGHTED GROSS MARGIN:
+  (Total Sales - Total Estimated COGS) / Total Sales × 100%
+
+SELL-THROUGH RATE:
+  Sales Units / (Beginning Inventory + Purchased Units)
+
+INVENTORY TURNOVER:
+  Sales Units / Average(Beginning Units, Ending Units)
+
+COST MATCHING:
+  99.90% of sales have matched purchase costs from same vendor-brand
+  Profitability excludes the unmatched 0.10%
+
+
+================================================================================
+5. DATA QUALITY NOTES
+================================================================================
+
+VENDOR NAME FORMATTING:
+  - Vendor names are right-padded with spaces to fixed width
+  - Use TRIM() when querying vendor names for clean results
+
+NULL HANDLING:
+  - Use NULLIF(denominator, 0) to prevent division by zero
+  - COALESCE for left-joined purchase data that may not exist
+
+TIME PERIODS:
+  - Sales: Daily granularity throughout 2024
+  - Inventory: Two snapshots (start: 2024-01-01, end: 2024-12-31)
+  - Purchases: Transaction-level with multiple date fields
+
+PRICE VARIATIONS:
+  - Sales prices can vary by date (promotions, markdowns)
+  - Purchase prices are aggregated using weighted average by vendor-brand
+
+
+================================================================================
+6. ANALYSIS USE CASES
+================================================================================
+
+SUPPORTED ANALYSES:
+  ✓ Vendor spend concentration and supplier risk (Pareto analysis)
+  ✓ Vendor-level profitability and weighted margin calculation
+  ✓ Brand performance quadrants (sales vs. margin)
+  ✓ Inventory exposure and turnover diagnostics
+  ✓ Freight cost allocation by vendor
+  ✓ Purchase-to-payment cycle analysis
+  ✓ Sell-through and stock efficiency metrics
+
+ANALYTICAL QUERIES:
+  See: sql/business_analysis.sql for 5 core business queries
+  - Query 1: Vendor-brand analytical dataset
+  - Query 2: Vendor scorecard and spend concentration
+  - Query 3: Ending inventory risk by brand
+  - Query 4: Brand opportunity quadrants
+  - Query 5: Portfolio reconciliation
+
+
+================================================================================
+7. EXECUTIVE KPIS (from Analysis)
+================================================================================
+
+FINANCIAL PERFORMANCE:
+  Total Sales:                   $452.06M
+  Procurement Spend:              $321.90M
+  Estimated Gross Profit:         $138.47M
+  Weighted Gross Margin:          30.66%
+
+SUPPLIER RISK:
+  Top-10 Vendor Concentration:    65.33% of procurement spend
+  Risk Status:                    High dependency requiring contingency
+
+INVENTORY EXPOSURE:
+  Ending Inventory (Retail):      $79.70M
+  Status:                         Requires markdown and reorder review
+
+
+================================================================================
+END OF DATA CARD
+================================================================================

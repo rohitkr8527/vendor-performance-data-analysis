@@ -1,0 +1,27 @@
+[project]
+name = "vendor-performance-data-analysis"
+version = "0.1.0"
+description = "MySQL, Python, and Power BI case study for vendor, profitability, and inventory decisions"
+readme = "README.md"
+authors = [
+    { name = "rohitkr8527", email = "rohitkr7518@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography>=50.0.1",
+    "python-dotenv>=1.0.0",
+    "ipykernel>=6.0.0",
+    "matplotlib>=3.11.2",
+    "nbclient>=0.10.0",
+    "nbformat>=5.10.0",
+    "pandas>=3.0.5",
+    "pymysql>=1.2.0",
+    "reportlab>=4.0.0",
+    "scipy>=1.18.1",
+    "seaborn>=0.13.2",
+    "sqlalchemy>=2.0.54",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.14,<0.13.0"]
+build-backend = "uv_build"

@@ -1,8 +1,12 @@
 pymysql
 sqlalchemy
-dotenv
+python-dotenv
 cryptography
 pandas
 matplotlib
 seaborn
 scipy
+ipykernel
+nbclient
+nbformat
+reportlab
