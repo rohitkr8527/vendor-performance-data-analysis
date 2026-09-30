@@ -1,10 +1,76 @@
-.ipynb_checkpoints/
+# ── Python ──────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── Virtual Environments ────────────────────────────────────────────
 .venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ── Jupyter ─────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# ── Databases & SQLite ──────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ── Environment & Secrets ───────────────────────────────────────────
 .env
+.env.*
+!.env.example
+
+# ── Data & Generated Datasets (too large for version control) ─────────
+*.csv
+*.tsv
+*.parquet
+*.feather
+*.h5
+*.pkl
+*.pickle
+*.gz
+*.zip
+
+# ── Logs ────────────────────────────────────────────────────────────
 logs/
-data/
+*.log
+
+# ── Testing & Linters ───────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ── IDE / Editor ────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── OS ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ── Misc & Scratch ──────────────────────────────────────────────────
 tmp/
-.DS_Store/
-*/.DS_Store
+temp/
+*.tmp
+*.bak
